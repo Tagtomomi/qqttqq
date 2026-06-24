@@ -28,6 +28,7 @@ export default function ProductImage({
   }
 
   const isLocalUpload = src.startsWith("/uploads/");
+  const isSupabaseStorage = src.includes(".supabase.co/storage/");
   const isRemote = src.startsWith("http://") || src.startsWith("https://");
   const isDataUrl = src.startsWith("data:");
 
@@ -56,7 +57,7 @@ export default function ProductImage({
       className={className}
       sizes={sizes}
       priority={priority}
-      unoptimized={isLocalUpload}
+      unoptimized={isLocalUpload || isSupabaseStorage}
     />
   );
 }

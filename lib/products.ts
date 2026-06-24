@@ -1,156 +1,132 @@
 import { calculateMargin } from "./calculations";
+import { createServerSupabase } from "./supabase/server";
 import type { Product, ProductInput } from "@/types/product";
 
-const mockProducts: Product[] = [
-  {
-    id: "1",
-    thumbnailUrl:
-      "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=200&h=200&fit=crop",
-    name: "오버핏 린넨 셔츠",
-    detailPageStatus: "done",
-    detailPageUrl: "https://example.com/products/linen-shirt",
-    costPrice: 28000,
-    salePrice: 59000,
-    marginAmount: 31000,
-    marginRate: 52.5,
-    saleStatus: "selling",
-    memo: "여름 시즌 베스트셀러",
-    createdAt: "2025-03-10T09:00:00.000Z",
-    updatedAt: "2025-06-01T14:30:00.000Z",
-  },
-  {
-    id: "2",
-    thumbnailUrl:
-      "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=200&h=200&fit=crop",
-    name: "와이드 데님 팬츠",
-    detailPageStatus: "in_progress",
-    detailPageUrl: "",
-    costPrice: 35000,
-    salePrice: 72000,
-    marginAmount: 37000,
-    marginRate: 51.4,
-    saleStatus: "draft",
-    memo: "상세 페이지 사진 촬영 예정",
-    createdAt: "2025-05-02T11:20:00.000Z",
-    updatedAt: "2025-06-15T10:00:00.000Z",
-  },
-  {
-    id: "3",
-    thumbnailUrl:
-      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=200&h=200&fit=crop",
-    name: "니트 가디건",
-    detailPageStatus: "not_started",
-    detailPageUrl: "",
-    costPrice: 22000,
-    salePrice: 48000,
-    marginAmount: 26000,
-    marginRate: 54.2,
-    saleStatus: "draft",
-    memo: "",
-    createdAt: "2025-06-01T08:00:00.000Z",
-    updatedAt: "2025-06-01T08:00:00.000Z",
-  },
-  {
-    id: "4",
-    thumbnailUrl:
-      "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=200&h=200&fit=crop",
-    name: "레더 라이더 재킷",
-    detailPageStatus: "done",
-    detailPageUrl: "https://example.com/products/leather-jacket",
-    costPrice: 89000,
-    salePrice: 189000,
-    marginAmount: 100000,
-    marginRate: 52.9,
-    saleStatus: "sold_out",
-    memo: "리오더 검토 중",
-    createdAt: "2025-01-15T10:00:00.000Z",
-    updatedAt: "2025-05-20T16:45:00.000Z",
-  },
-  {
-    id: "5",
-    thumbnailUrl:
-      "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=200&h=200&fit=crop",
-    name: "코튼 후드 스웨트셔츠",
-    detailPageStatus: "done",
-    detailPageUrl: "https://example.com/products/hoodie",
-    costPrice: 18000,
-    salePrice: 42000,
-    marginAmount: 24000,
-    marginRate: 57.1,
-    saleStatus: "stopped",
-    memo: "시즌 종료로 판매 중지",
-    createdAt: "2024-11-20T09:30:00.000Z",
-    updatedAt: "2025-04-01T12:00:00.000Z",
-  },
-  {
-    id: "6",
-    thumbnailUrl:
-      "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=200&h=200&fit=crop",
-    name: "울 블렌드 코트",
-    detailPageStatus: "in_progress",
-    detailPageUrl: "",
-    costPrice: 120000,
-    salePrice: 249000,
-    marginAmount: 129000,
-    marginRate: 51.8,
-    saleStatus: "selling",
-    memo: "겨울 신상",
-    createdAt: "2025-06-10T13:00:00.000Z",
-    updatedAt: "2025-06-18T09:15:00.000Z",
-  },
-];
+type ProductRow = {
+  id: string;
+  thumbnail_url: string;
+  name: string;
+  detail_page_status: Product["detailPageStatus"];
+  detail_page_url: string;
+  cost_price: number;
+  sale_price: number;
+  margin_amount: number;
+  margin_rate: number;
+  sale_status: Product["saleStatus"];
+  memo: string;
+  created_at: string;
+  updated_at: string;
+};
 
-let products: Product[] = [...mockProducts];
+function rowToProduct(row: ProductRow): Product {
+  return {
+    id: row.id,
+    thumbnailUrl: row.thumbnail_url,
+    name: row.name,
+    detailPageStatus: row.detail_page_status,
+    detailPageUrl: row.detail_page_url,
+    costPrice: row.cost_price,
+    salePrice: row.sale_price,
+    marginAmount: row.margin_amount,
+    marginRate: Number(row.margin_rate),
+    saleStatus: row.sale_status,
+    memo: row.memo,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
 
-function withMargin(input: ProductInput): Pick<Product, "marginAmount" | "marginRate"> {
-  return calculateMargin(input.costPrice, input.salePrice);
+function inputToRow(input: ProductInput) {
+  const margin = calculateMargin(input.costPrice, input.salePrice);
+
+  return {
+    thumbnail_url: input.thumbnailUrl,
+    name: input.name,
+    detail_page_status: input.detailPageStatus,
+    detail_page_url: input.detailPageUrl,
+    cost_price: input.costPrice,
+    sale_price: input.salePrice,
+    margin_amount: margin.marginAmount,
+    margin_rate: margin.marginRate,
+    sale_status: input.saleStatus,
+    memo: input.memo,
+    updated_at: new Date().toISOString(),
+  };
 }
 
 export async function getProducts(): Promise<Product[]> {
-  return [...products].sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-  );
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`상품 목록 조회 실패: ${error.message}`);
+  }
+
+  return (data as ProductRow[]).map(rowToProduct);
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
-  return products.find((product) => product.id === id) ?? null;
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`상품 조회 실패: ${error.message}`);
+  }
+
+  return data ? rowToProduct(data as ProductRow) : null;
 }
 
 export async function createProduct(input: ProductInput): Promise<Product> {
-  const now = new Date().toISOString();
-  const product: Product = {
-    ...input,
-    id: crypto.randomUUID(),
-    ...withMargin(input),
-    createdAt: now,
-    updatedAt: now,
-  };
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase
+    .from("products")
+    .insert(inputToRow(input))
+    .select("*")
+    .single();
 
-  products = [product, ...products];
-  return product;
+  if (error) {
+    throw new Error(`상품 추가 실패: ${error.message}`);
+  }
+
+  return rowToProduct(data as ProductRow);
 }
 
 export async function updateProduct(
   id: string,
   input: ProductInput,
 ): Promise<Product | null> {
-  const index = products.findIndex((product) => product.id === id);
-  if (index === -1) return null;
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase
+    .from("products")
+    .update(inputToRow(input))
+    .eq("id", id)
+    .select("*")
+    .maybeSingle();
 
-  const updated: Product = {
-    ...input,
-    id,
-    ...withMargin(input),
-    createdAt: products[index].createdAt,
-    updatedAt: new Date().toISOString(),
-  };
+  if (error) {
+    throw new Error(`상품 수정 실패: ${error.message}`);
+  }
 
-  products[index] = updated;
-  return updated;
+  return data ? rowToProduct(data as ProductRow) : null;
 }
 
 export async function deleteProduct(id: string): Promise<boolean> {
-  const length = products.length;
-  products = products.filter((product) => product.id !== id);
-  return products.length < length;
+  const supabase = createServerSupabase();
+  const { error, count } = await supabase
+    .from("products")
+    .delete({ count: "exact" })
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(`상품 삭제 실패: ${error.message}`);
+  }
+
+  return (count ?? 0) > 0;
 }

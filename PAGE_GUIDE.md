@@ -70,7 +70,10 @@
 
 | 수정 내용 | 파일 |
 |-----------|------|
-| 상품 데이터, CRUD (나중에 DB로 교체) | `lib/products.ts` |
+| 상품 데이터, CRUD | `lib/products.ts` |
+| Supabase 연결 | `lib/supabase/server.ts` |
+| DB 테이블 생성 SQL | `supabase/schema.sql` |
+| 환경변수 (.env.local) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
 | 마진 계산, 가격/퍼센트 포맷 | `lib/calculations.ts` |
 | 상품 타입 정의 | `types/product.ts` |
 
@@ -90,7 +93,7 @@
 - **목록 열 추가/순서 변경** → `ProductTable.tsx` + `ProductCard.tsx` + `CheckBox.tsx`
 - **가격 아래 마진 글씨** → `ProductCard.tsx`
 - **수정 버튼 아이콘** → `ProductCard.tsx` → `EditIcon`
-- **mock 상품 데이터** → `lib/products.ts`
+- **mock 상품 데이터** → Supabase Table Editor 또는 SQL로 직접 추가
 - **새 필드 추가** → `types/product.ts` → `lib/products.ts` → `ProductForm.tsx` → 목록/상세 컴포넌트
 
 ---
@@ -104,5 +107,16 @@ app/                  → 페이지 (URL)
 components/           → 화면 UI 조각
 lib/                  → 데이터·계산·업로드 로직
 types/                → TypeScript 타입
-public/uploads/       → 업로드된 이미지 파일
+public/uploads/       → (이전) 로컬 업로드, 현재는 Supabase Storage 사용
+supabase/             → DB 스키마 SQL
 ```
+
+---
+
+## Supabase 최초 설정
+
+1. `.env.local`에 URL·키 설정 (URL은 `/rest/v1/` 없이 프로젝트 주소만)
+2. [Supabase 대시보드](https://supabase.com/dashboard) → SQL Editor
+3. `supabase/schema.sql` 내용 전체 복사 후 실행
+4. `product-images` Storage 버킷과 `products` 테이블이 생성됨
+5. `npm run dev` 후 상품 추가 테스트

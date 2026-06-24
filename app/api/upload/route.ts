@@ -1,8 +1,8 @@
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
+import { createServerSupabase } from "@/lib/supabase/server";
 
 const MAX_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const BUCKET = "product-images";
 
 export async function POST(request: Request) {
   const formData = await request.formData();
@@ -27,12 +27,26 @@ export async function POST(request: Request) {
   }
 
   const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const safeName = `${crypto.randomUUID()}.${extension}`;
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
-  const filePath = path.join(uploadDir, safeName);
+  const fileName = `${crypto.randomUUID()}.${extension}`;
+  const supabase = createServerSupabase();
 
-  await mkdir(uploadDir, { recursive: true });
-  await writeFile(filePath, Buffer.from(await file.arrayBuffer()));
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(fileName, Buffer.from(await file.arrayBuffer()), {
+      contentType: file.type,
+      upsert: false,
+    });
 
-  return Response.json({ url: `/uploads/${safeName}` });
+  if (error) {
+    return Response.json(
+      { error: `이미지 업로드 실패: ${error.message}` },
+      { status: 500 },
+    );
+  }
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from(BUCKET).getPublicUrl(fileName);
+
+  return Response.json({ url: publicUrl });
 }

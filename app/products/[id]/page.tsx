@@ -8,6 +8,8 @@ import {
 } from "@/lib/calculations";
 import { getProductById } from "@/lib/products";
 
+export const dynamic = "force-dynamic";
+
 interface ProductDetailPageProps {
   params: Promise<{ id: string }>;
 }
