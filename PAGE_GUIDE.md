@@ -120,3 +120,22 @@ supabase/             → DB 스키마 SQL
 3. `supabase/schema.sql` 내용 전체 복사 후 실행
 4. `product-images` Storage 버킷과 `products` 테이블이 생성됨
 5. `npm run dev` 후 상품 추가 테스트
+
+---
+
+## Vercel 배포 시
+
+`.env.local`은 Vercel에 자동으로 안 올라갑니다. **Vercel 대시보드에서 직접 등록**해야 합니다.
+
+1. Vercel → 프로젝트 → **Settings** → **Environment Variables**
+2. 아래 2개 추가 (Production, Preview, Development 모두 체크)
+
+| 이름 | 값 예시 |
+|------|---------|
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://wjhntvcgubahhgdbylen.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/publishable key |
+
+3. URL 끝에 `/rest/v1/` **붙이지 마세요**
+4. 저장 후 **Deployments → Redeploy**
+
+에러가 나면 Supabase SQL(`supabase/schema.sql`) 실행 여부도 확인하세요.
