@@ -25,6 +25,22 @@ export function isHeicFile(file: File): boolean {
   );
 }
 
+export function isValidImageUrl(src: string): boolean {
+  const trimmed = src.trim();
+  if (!trimmed) return false;
+
+  return (
+    trimmed.startsWith("https://") ||
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("/uploads/") ||
+    trimmed.startsWith("data:image/")
+  );
+}
+
+export function isBrowserDisplayableUrl(src: string): boolean {
+  return !/\.heic|\.heif/i.test(src);
+}
+
 export function resolveUploadFile(file: File):
   | { contentType: string; extension: string }
   | { error: string } {

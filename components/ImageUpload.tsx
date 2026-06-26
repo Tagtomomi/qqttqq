@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { isHeicFile } from "@/lib/image-file";
 import { uploadImage, UPLOAD_ACCEPT } from "@/lib/images";
 import ProductImage from "./ProductImage";
 
@@ -30,11 +31,7 @@ export default function ImageUpload({
     setError("");
     setIsUploading(true);
     setStatusMessage(
-      /\.heif?$/i.test(file.name) ||
-        file.type === "image/heic" ||
-        file.type === "image/heif"
-        ? "HEIC 변환·압축 후 업로드 중..."
-        : "압축 후 업로드 중...",
+      isHeicFile(file) ? "HEIC 변환·압축 후 업로드 중..." : "압축 후 업로드 중...",
     );
 
     try {
@@ -64,7 +61,6 @@ export default function ImageUpload({
               alt="업로드된 이미지"
               fill
               className="object-cover"
-              sizes="96px"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">

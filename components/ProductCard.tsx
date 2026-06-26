@@ -44,7 +44,6 @@ export default function ProductCard({ product }: ProductCardProps) {
             alt={product.name}
             fill
             className="object-cover"
-            sizes="100px"
           />
         </Link>
       </td>

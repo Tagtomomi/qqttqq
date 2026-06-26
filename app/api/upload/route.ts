@@ -1,27 +1,12 @@
 import { createServerSupabase } from "@/lib/supabase/server";
 import { isHeicFile, resolveUploadFile } from "@/lib/image-file";
-import { optimizeImageBuffer } from "@/lib/image-optimize";
+import { processUploadImage } from "@/lib/image-processing";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const MAX_SIZE = 10 * 1024 * 1024;
 const BUCKET = "product-images";
-
-async function convertHeicToJpeg(buffer: Buffer): Promise<Buffer> {
-  try {
-    const sharp = (await import("sharp")).default;
-    return await sharp(buffer).rotate().jpeg({ quality: 85 }).toBuffer();
-  } catch {
-    const convert = (await import("heic-convert")).default;
-    const output = await convert({
-      buffer,
-      format: "JPEG",
-      quality: 0.85,
-    });
-    return Buffer.from(output);
-  }
-}
 
 export async function POST(request: Request) {
   const formData = await request.formData();
@@ -44,31 +29,19 @@ export async function POST(request: Request) {
   }
 
   try {
-    let buffer: Buffer = Buffer.from(await file.arrayBuffer());
-    let contentType = resolved.contentType;
-    let extension = resolved.extension;
-
-    if (
-      isHeicFile(file) ||
-      contentType === "image/heic" ||
-      contentType === "image/heif"
-    ) {
-      buffer = await convertHeicToJpeg(buffer);
-      contentType = "image/jpeg";
-      extension = "jpg";
-    }
-
-    if (contentType !== "image/gif") {
-      const optimized = await optimizeImageBuffer(buffer, contentType);
-      buffer = optimized.buffer;
-      contentType = optimized.contentType;
-      extension = optimized.extension;
-    }
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const { buffer: processed, contentType, extension } =
+      await processUploadImage(
+        file,
+        buffer,
+        resolved.contentType,
+        resolved.extension,
+      );
 
     const fileName = `${crypto.randomUUID()}.${extension}`;
     const supabase = createServerSupabase();
 
-    const { error } = await supabase.storage.from(BUCKET).upload(fileName, buffer, {
+    const { error } = await supabase.storage.from(BUCKET).upload(fileName, processed, {
       contentType,
       upsert: false,
     });

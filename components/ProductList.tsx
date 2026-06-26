@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PRODUCT_CATEGORIES } from "@/lib/categories";
 import type {
   DetailPageStatus,
@@ -8,11 +8,16 @@ import type {
   ProductCategory,
   SaleStatus,
 } from "@/types/product";
+import ProductGrid from "./ProductGrid";
 import ProductTable from "./ProductTable";
 
 interface ProductListProps {
   products: Product[];
 }
+
+type ViewMode = "table" | "grid";
+
+const VIEW_MODE_KEY = "productViewMode";
 
 const detailPageOptions: { value: DetailPageStatus | "all"; label: string }[] =
   [
@@ -46,6 +51,19 @@ export default function ProductList({ products }: ProductListProps) {
   const [saleStatusFilter, setSaleStatusFilter] = useState<SaleStatus | "all">(
     "all",
   );
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+
+  useEffect(() => {
+    const saved = localStorage.getItem(VIEW_MODE_KEY);
+    if (saved === "table" || saved === "grid") {
+      setViewMode(saved);
+    }
+  }, []);
+
+  function changeViewMode(mode: ViewMode) {
+    setViewMode(mode);
+    localStorage.setItem(VIEW_MODE_KEY, mode);
+  }
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
@@ -139,12 +157,48 @@ export default function ProductList({ products }: ProductListProps) {
             </select>
           </div>
         </div>
-        <p className="mt-3 text-sm text-gray-500">
-          총 {filteredProducts.length}개 상품
-        </p>
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <p className="text-sm text-gray-500">
+            총 {filteredProducts.length}개 상품
+          </p>
+          <div
+            className="flex rounded-lg border border-gray-300 p-0.5"
+            role="group"
+            aria-label="보기 방식"
+          >
+            <button
+              type="button"
+              onClick={() => changeViewMode("table")}
+              aria-pressed={viewMode === "table"}
+              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                viewMode === "table"
+                  ? "bg-gray-900 text-white"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              목록
+            </button>
+            <button
+              type="button"
+              onClick={() => changeViewMode("grid")}
+              aria-pressed={viewMode === "grid"}
+              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                viewMode === "grid"
+                  ? "bg-gray-900 text-white"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              그리드
+            </button>
+          </div>
+        </div>
       </div>
 
-      <ProductTable products={filteredProducts} />
+      {viewMode === "table" ? (
+        <ProductTable products={filteredProducts} />
+      ) : (
+        <ProductGrid products={filteredProducts} />
+      )}
     </div>
   );
 }
