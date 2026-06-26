@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "옷 관리자",
+  title: "QTHATQ admin",
   description: "의류 상품 관리 대시보드",
 };
 

@@ -1,11 +1,13 @@
 import { calculateMargin } from "./calculations";
 import { createServerSupabase } from "./supabase/server";
 import type { Product, ProductInput } from "@/types/product";
+import type { ProductCategory } from "@/lib/categories";
 
 type ProductRow = {
   id: string;
   thumbnail_url: string;
   name: string;
+  category: ProductCategory;
   detail_page_status: Product["detailPageStatus"];
   detail_page_url: string;
   cost_price: number;
@@ -23,6 +25,7 @@ function rowToProduct(row: ProductRow): Product {
     id: row.id,
     thumbnailUrl: row.thumbnail_url,
     name: row.name,
+    category: row.category,
     detailPageStatus: row.detail_page_status,
     detailPageUrl: row.detail_page_url,
     costPrice: row.cost_price,
@@ -42,6 +45,7 @@ function inputToRow(input: ProductInput) {
   return {
     thumbnail_url: input.thumbnailUrl,
     name: input.name,
+    category: input.category,
     detail_page_status: input.detailPageStatus,
     detail_page_url: input.detailPageUrl,
     cost_price: input.costPrice,

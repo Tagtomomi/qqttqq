@@ -7,8 +7,13 @@ import {
   formatCurrency,
   formatPercent,
 } from "@/lib/calculations";
+import {
+  DEFAULT_PRODUCT_CATEGORY,
+  PRODUCT_CATEGORIES,
+} from "@/lib/categories";
 import type { Product, ProductInput } from "@/types/product";
 import ImageUpload from "./ImageUpload";
+import PriceInput from "./PriceInput";
 import StatusCheckbox from "./StatusCheckbox";
 
 interface ProductFormProps {
@@ -19,6 +24,7 @@ interface ProductFormProps {
 const emptyForm: ProductInput = {
   thumbnailUrl: "",
   name: "",
+  category: DEFAULT_PRODUCT_CATEGORY,
   detailPageStatus: "not_started",
   detailPageUrl: "",
   costPrice: 0,
@@ -34,6 +40,7 @@ export default function ProductForm({ initialData, onSubmit }: ProductFormProps)
       ? {
           thumbnailUrl: initialData.thumbnailUrl,
           name: initialData.name,
+          category: initialData.category,
           detailPageStatus: initialData.detailPageStatus,
           detailPageUrl: initialData.detailPageUrl,
           costPrice: initialData.costPrice,
@@ -94,6 +101,30 @@ export default function ProductForm({ initialData, onSubmit }: ProductFormProps)
           />
         </div>
 
+        <div>
+          <label
+            htmlFor="category"
+            className="mb-1 block text-sm font-medium text-gray-700"
+          >
+            카테고리 <span className="text-red-500">*</span>
+          </label>
+          <select
+            id="category"
+            required
+            value={form.category}
+            onChange={(e) =>
+              updateField("category", e.target.value as ProductInput["category"])
+            }
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          >
+            {PRODUCT_CATEGORIES.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <ImageUpload
           value={form.thumbnailUrl}
           onChange={(url) => updateField("thumbnailUrl", url)}
@@ -144,16 +175,11 @@ export default function ProductForm({ initialData, onSubmit }: ProductFormProps)
             >
               원가 (원) <span className="text-red-500">*</span>
             </label>
-            <input
+            <PriceInput
               id="costPrice"
-              type="number"
               required
-              min={0}
-              value={form.costPrice || ""}
-              onChange={(e) =>
-                updateField("costPrice", Number(e.target.value) || 0)
-              }
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              value={form.costPrice}
+              onChange={(value) => updateField("costPrice", value)}
             />
           </div>
           <div>
@@ -163,16 +189,11 @@ export default function ProductForm({ initialData, onSubmit }: ProductFormProps)
             >
               판매가 (원) <span className="text-red-500">*</span>
             </label>
-            <input
+            <PriceInput
               id="salePrice"
-              type="number"
               required
-              min={0}
-              value={form.salePrice || ""}
-              onChange={(e) =>
-                updateField("salePrice", Number(e.target.value) || 0)
-              }
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              value={form.salePrice}
+              onChange={(value) => updateField("salePrice", value)}
             />
           </div>
         </div>

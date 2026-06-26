@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { uploadImage } from "@/lib/images";
+import { uploadImage, UPLOAD_ACCEPT } from "@/lib/images";
 import ProductImage from "./ProductImage";
 
 interface ImageUploadProps {
@@ -21,12 +21,21 @@ export default function ImageUpload({
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
 
+  const [statusMessage, setStatusMessage] = useState("");
+
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setError("");
     setIsUploading(true);
+    setStatusMessage(
+      /\.heif?$/i.test(file.name) ||
+        file.type === "image/heic" ||
+        file.type === "image/heif"
+        ? "HEIC 변환·압축 후 업로드 중..."
+        : "압축 후 업로드 중...",
+    );
 
     try {
       const url = await uploadImage(file);
@@ -35,6 +44,7 @@ export default function ImageUpload({
       setError(err instanceof Error ? err.message : "업로드에 실패했습니다.");
     } finally {
       setIsUploading(false);
+      setStatusMessage("");
       if (inputRef.current) inputRef.current.value = "";
     }
   }
@@ -67,7 +77,7 @@ export default function ImageUpload({
           <input
             ref={inputRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
+            accept={UPLOAD_ACCEPT}
             onChange={handleFileChange}
             className="hidden"
             id="thumbnail-upload"
@@ -79,7 +89,7 @@ export default function ImageUpload({
               isUploading ? "pointer-events-none opacity-50" : ""
             }`}
           >
-            {isUploading ? "업로드 중..." : value ? "이미지 변경" : "파일 선택"}
+            {isUploading ? statusMessage || "업로드 중..." : value ? "이미지 변경" : "파일 선택"}
           </label>
           {value && (
             <button
@@ -90,7 +100,9 @@ export default function ImageUpload({
               이미지 제거
             </button>
           )}
-          <p className="text-xs text-gray-500">JPEG, PNG, WebP, GIF · 최대 5MB</p>
+          <p className="text-xs text-gray-500">
+            JPEG, PNG, WebP, GIF, HEIC · 최대 10MB · 업로드 시 자동 압축(WebP, 최대 1200px)
+          </p>
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import {
   formatCurrency,
   formatPercent,
 } from "@/lib/calculations";
+import { getCategoryLabel } from "@/lib/categories";
 import { getProductById } from "@/lib/products";
 
 export const dynamic = "force-dynamic";
@@ -50,6 +51,9 @@ export default async function ProductDetailPage({
         <div className="space-y-6 p-5 sm:p-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
+            <p className="mt-1 text-sm text-gray-500">
+              {getCategoryLabel(product.category)}
+            </p>
             <div className="mt-4 space-y-3">
               <div>
                 <p className="mb-1.5 text-xs text-gray-500">상세 제작</p>

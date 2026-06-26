@@ -27,7 +27,7 @@ export default async function ProductsPage() {
         {!errorMessage && (
           <Link
             href="/products/new"
-            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
+            className="inline-flex items-center justify-center rounded-lg bg-[rgb(57,45,55)] px-4 py-2.5 text-sm font-medium text-white hover:bg-[rgb(45,35,43)]"
           >
             + 상품 추가
           </Link>

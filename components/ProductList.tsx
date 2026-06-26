@@ -1,7 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { DetailPageStatus, Product, SaleStatus } from "@/types/product";
+import { PRODUCT_CATEGORIES } from "@/lib/categories";
+import type {
+  DetailPageStatus,
+  Product,
+  ProductCategory,
+  SaleStatus,
+} from "@/types/product";
 import ProductTable from "./ProductTable";
 
 interface ProductListProps {
@@ -24,8 +30,16 @@ const saleStatusOptions: { value: SaleStatus | "all"; label: string }[] = [
   { value: "stopped", label: "판매중지" },
 ];
 
+const categoryOptions: { value: ProductCategory | "all"; label: string }[] = [
+  { value: "all", label: "전체" },
+  ...PRODUCT_CATEGORIES,
+];
+
 export default function ProductList({ products }: ProductListProps) {
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<ProductCategory | "all">(
+    "all",
+  );
   const [detailPageFilter, setDetailPageFilter] = useState<
     DetailPageStatus | "all"
   >("all");
@@ -38,20 +52,22 @@ export default function ProductList({ products }: ProductListProps) {
       const matchesSearch = product.name
         .toLowerCase()
         .includes(search.trim().toLowerCase());
+      const matchesCategory =
+        categoryFilter === "all" || product.category === categoryFilter;
       const matchesDetailPage =
         detailPageFilter === "all" ||
         product.detailPageStatus === detailPageFilter;
       const matchesSaleStatus =
         saleStatusFilter === "all" || product.saleStatus === saleStatusFilter;
 
-      return matchesSearch && matchesDetailPage && matchesSaleStatus;
+      return matchesSearch && matchesCategory && matchesDetailPage && matchesSaleStatus;
     });
-  }, [products, search, detailPageFilter, saleStatusFilter]);
+  }, [products, search, categoryFilter, detailPageFilter, saleStatusFilter]);
 
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <div className="sm:col-span-2 lg:col-span-2">
             <label htmlFor="search" className="sr-only">
               제품명 검색
@@ -64,6 +80,25 @@ export default function ProductList({ products }: ProductListProps) {
               onChange={(e) => setSearch(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
+          </div>
+          <div>
+            <label htmlFor="categoryFilter" className="sr-only">
+              카테고리
+            </label>
+            <select
+              id="categoryFilter"
+              value={categoryFilter}
+              onChange={(e) =>
+                setCategoryFilter(e.target.value as ProductCategory | "all")
+              }
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            >
+              {categoryOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  카테고리: {option.label}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label htmlFor="detailPageFilter" className="sr-only">

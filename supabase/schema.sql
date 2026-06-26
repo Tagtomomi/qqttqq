@@ -4,6 +4,8 @@ create table if not exists public.products (
   id uuid primary key default gen_random_uuid(),
   thumbnail_url text not null default '',
   name text not null,
+  category text not null default 'top'
+    check (category in ('top', 'bottom', 'outer', 'dress', 'accessory')),
   detail_page_status text not null default 'not_started'
     check (detail_page_status in ('not_started', 'in_progress', 'done')),
   detail_page_url text not null default '',
@@ -19,6 +21,7 @@ create table if not exists public.products (
 );
 
 create index if not exists products_updated_at_idx on public.products (updated_at desc);
+create index if not exists products_category_idx on public.products (category);
 
 alter table public.products enable row level security;
 

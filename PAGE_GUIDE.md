@@ -33,7 +33,7 @@
 | 검색·필터 UI | `components/ProductList.tsx` |
 | 목록 테이블 + 상단 헤더 열 | `components/ProductTable.tsx` |
 | 목록 한 줄(썸네일, 제목, 가격, 체크박스, 수정 아이콘) | `components/ProductCard.tsx` |
-| 열 간격(grid) 설정 | `components/CheckBox.tsx` → `PRODUCT_LIST_GRID` |
+| 열 너비·헤더 정렬 | `components/ProductTable.tsx` |
 
 ---
 

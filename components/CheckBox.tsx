@@ -56,6 +56,3 @@ export default function CheckBox({
     </label>
   );
 }
-
-export const PRODUCT_LIST_GRID =
-  "grid grid-cols-[32px_minmax(0,1fr)_24px_auto_auto_24px_28px] items-center gap-x-1";
